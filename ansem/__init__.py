@@ -1,10 +1,11 @@
 import os
 
 from flask import Flask
-from srs.auth import auth
-from srs.person.list import person_list
-from srs.person.detail import person_detail
-from srs.db import init_db
+
+from ansem.auth import auth
+# from srs.person.list import person_list
+# from srs.person.detail import person_detail
+from ansem.db import init_db
 
 
 def create_app(test_config=None):
@@ -12,7 +13,7 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY=b'e02d3a100e849c3cf396',
-        DATABASE=os.path.join(app.instance_path, 'srs.sqlite'),
+        DATABASE=os.path.join(app.instance_path, 'database.sqlite'),
     )
 
     if test_config is None:
@@ -29,8 +30,8 @@ def create_app(test_config=None):
         pass
 
     app.register_blueprint(auth)
-    app.register_blueprint(person_list)
-    app.register_blueprint(person_detail)
+    # app.register_blueprint(person_list)
+    # app.register_blueprint(person_detail)
 
     db.init_app(app)
 
