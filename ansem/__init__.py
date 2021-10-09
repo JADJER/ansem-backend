@@ -6,11 +6,13 @@ from flask_jwt import JWT
 from .api import api_v1
 from .secury import identity, authentication
 from .models import db
+from .config import Config
 
 
 def create_app():
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    app.config.from_object(Config)
     app.config.from_pyfile(os.path.join(app.instance_path, 'app.cfg'))
 
     # ensure the instance folder exists
