@@ -1,11 +1,13 @@
 import os
 
 from flask import Flask
+from flask_jwt import JWT
 
-from ansem.auth import auth
-# from srs.person.list import person_list
-# from srs.person.detail import person_detail
-from ansem.db import init_db
+from .api import api_v1
+from .secury import identity, authentication
+from .models import db
+
+jwt = JWT(authentication_handler=authentication, identity_handler=identity)
 
 
 def create_app(test_config=None):
@@ -13,7 +15,9 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY=b'e02d3a100e849c3cf396',
-        DATABASE=os.path.join(app.instance_path, 'database.sqlite'),
+        # DATABASE=os.path.join(app.instance_path, 'database.sqlite'),
+        SQLALCHEMY_DATABASE_URI='sqlite:////home/jadjer/database.sqlite',
+        SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
 
     if test_config is None:
@@ -29,10 +33,13 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    app.register_blueprint(auth)
-    # app.register_blueprint(person_list)
-    # app.register_blueprint(person_detail)
-
     db.init_app(app)
+    jwt.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+
+    # app.register_blueprint(auth)
+    app.register_blueprint(api_v1)
 
     return app
