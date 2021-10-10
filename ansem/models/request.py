@@ -22,4 +22,25 @@ class Request(db.Model):
         super(Request, self).__init__(**kwargs)
 
     def __repr__(self):
-        return '<Request %r>' % self.id
+        return {
+            'id': self.id,
+            'country': self.email,
+            'city': self.first_name,
+            'address': self.last_name,
+            'school': self.last_name,
+            'score': self.last_name,
+            'index': self.last_name,
+            'user_id': self.last_name
+        }
+
+    def __str__(self):
+        return {
+            'id': self.id,
+            'country': self.email,
+            'city': self.first_name,
+            'address': self.last_name,
+            'school': self.last_name,
+            'score': self.last_name,
+            'index': self.last_name,
+            'user_id': self.last_name
+        }

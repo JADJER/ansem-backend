@@ -15,7 +15,14 @@ class User(db.Model):
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
-        # do custom initialization here
+
+    def __repr__(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name
+        }
 
     def __str__(self):
         return {
