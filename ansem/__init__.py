@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from flask_jwt import JWT
+from flask_cors import CORS
 
 from .api import api_bp
 from .models import db
@@ -22,6 +23,7 @@ def create_app():
         pass
 
     JWT(app, authentication, identity)
+    CORS(app)
 
     db.init_app(app)
 
