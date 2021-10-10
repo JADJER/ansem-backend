@@ -1,3 +1,2 @@
-from .profile import Profile
-from .request import Request
-from .requests import Requests
+from .profile import profile_bp
+from .requests import requests_bp

@@ -1,31 +1,31 @@
-from flask import jsonify
+from flask import Blueprint, request, abort, jsonify
 from flask_jwt import jwt_required, current_identity
-from flask_restful import Resource, reqparse
+from ansem.models import UserModel, db
 
-from ansem.models import User
-from ansem.models import db
-
-parser = reqparse.RequestParser()
-parser.add_argument('email', required=True)
-parser.add_argument('password', required=True)
+profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
 
 
-class Profile(Resource):
+@profile_bp.route('', methods=["GET"])
+@jwt_required()
+def get_profile():
+    user = UserModel.query.get(current_identity.id)
+    return jsonify(user)
 
-    @jwt_required()
-    def get(self):
-        # print('%s' % current_identity.password)
-        return {'hello': 'world'}
 
-    def post(self):
-        args = parser.parse_args()
+@profile_bp.route('', methods=['POST'])
+def create_profile():
+    if not request.json:
+        abort(400)
 
-        user = db.session.query(User).filter(User.email == args.email).first()
+    email = request.json['email']
+    password = request.json['password']
 
-        if not user:
-            user = User(email=args.email, password=args.password)
+    user = UserModel.query.filter_by(email=email).first()
 
-            db.session.add(user)
-            db.session.commit()
+    if not user:
+        user = UserModel(email=email, password=password)
 
-        return jsonify(user)
+        db.session.add(user)
+        db.session.commit()
+
+    return jsonify(user)

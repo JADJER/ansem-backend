@@ -3,10 +3,10 @@ import os
 from flask import Flask
 from flask_jwt import JWT
 
-from .api import api_v1
-from .secury import identity, authentication
+from .api import api_bp
 from .models import db
 from .config import Config
+from .secury import identity, authentication
 
 
 def create_app():
@@ -28,6 +28,6 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-    app.register_blueprint(api_v1)
+    app.register_blueprint(api_bp)
 
     return app

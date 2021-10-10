@@ -1,10 +1,6 @@
 from flask import Blueprint
-from flask_restful import Api
-from .resources import *
+from .resources import profile_bp, requests_bp
 
-api_v1 = Blueprint('api', __name__, url_prefix='/api/v1')
-
-api = Api(api_v1)
-api.add_resource(Profile, '/profile')
-api.add_resource(Requests, '/requests')
-api.add_resource(Request, '/requests/<id>')
+api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
+api_bp.register_blueprint(profile_bp)
+api_bp.register_blueprint(requests_bp)
