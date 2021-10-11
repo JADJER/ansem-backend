@@ -3,3 +3,4 @@ class Config(object):
     JWT_AUTH_USERNAME_KEY = "email"
     JWT_AUTH_PASSWORD_KEY = 'password'
     JWT_AUTH_HEADER_PREFIX = 'Bearer'
+    JWT_AUTH_URL_RULE = '/api/v1/auth'
