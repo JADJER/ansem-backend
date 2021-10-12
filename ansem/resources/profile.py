@@ -37,7 +37,7 @@ def create_profile():
 
     for field in fields:
         if field not in request_data:
-            return make_response(error_messages.get(field), 400)
+            return make_response({'error': error_messages.get(field)}, 400)
 
     email = request_data['email']
 
@@ -65,14 +65,14 @@ def create_profile():
     db.session.add(user)
     db.session.commit()
 
-    return jsonify(user)
+    return jsonify(user.as_json())
 
 
 @profile_bp.route('', methods=["GET"])
 @jwt_required()
 def get_profile():
     user = UserModel.query.get(current_identity.id)
-    return jsonify(user)
+    return jsonify(user.as_json())
 
 
 @profile_bp.route('', methods=['PUT'])
@@ -85,7 +85,7 @@ def update_profile():
 
     for field in fields:
         if field not in request_data:
-            return make_response(error_messages.get(field), 400)
+            return make_response({'error': error_messages.get(field)}, 400)
 
     user = UserModel.query.get(current_identity.id)
     user.email = request_data['email']
@@ -100,7 +100,7 @@ def update_profile():
     db.session.add(user)
     db.session.commit()
 
-    return jsonify(user)
+    return jsonify(user.as_json())
 
 
 @profile_bp.route('', methods=['DELETE'])

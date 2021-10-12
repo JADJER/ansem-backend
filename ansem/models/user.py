@@ -17,22 +17,23 @@ class User(db.Model):
     address: str = db.Column(db.String, nullable=False)
     mobile_no: str = db.Column(db.String, unique=True, nullable=False)
 
-    json = {
-        'id': id,
-        'email': email,
-        'first_name': first_name,
-        'last_name': last_name,
-        'country': country,
-        'city': city,
-        'address': address,
-        'mobile_no': mobile_no,
-    }
-
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
 
     def __repr__(self):
-        return self.json
+        return self.as_json()
 
     def __str__(self):
-        return self.json
+        return self.as_json()
+
+    def as_json(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'country': self.country,
+            'city': self.city,
+            'address': self.address,
+            'mobile_no': self.mobile_no,
+        }
