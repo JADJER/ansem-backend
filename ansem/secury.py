@@ -1,11 +1,13 @@
 import hmac
 
 from ansem.models import UserModel
+from ansem.utils import password_hash_generate
 
 
 def authentication(email, password):
     user = UserModel.query.filter_by(email=email).first()
-    if user and hmac.compare_digest(user.password.encode('utf-8'), password.encode('utf-8')):
+    password_hash = password_hash_generate(password)
+    if user and hmac.compare_digest(user.password, password_hash):
         return user
 
 
