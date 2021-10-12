@@ -1,17 +1,9 @@
-import hashlib
-
 from flask import Blueprint, request, jsonify, make_response
 from flask_jwt import jwt_required, current_identity
 from ansem.models import UserModel, db
+from ansem.utils import password_hash_generate
 
 profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
-
-
-def password_hash(password):
-    encoded_password = password.encode('utf-8')
-    hash_object = hashlib.sha512(encoded_password)
-    hex_dig = hash_object.hexdigest()
-    return hex_dig
 
 
 @profile_bp.route('', methods=['POST'])
@@ -35,7 +27,7 @@ def create_profile():
     if not user:
         user = UserModel()
         user.email = email
-        user.password = password_hash(password)
+        user.password = password_hash_generate(password)
 
         if 'first_name' in request_data:
             user.first_name = request_data['first_name']
