@@ -5,6 +5,28 @@ from ansem.utils import password_hash_generate
 
 profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
 
+fields = [
+    'email',
+    'password',
+    'first_name',
+    'last_name',
+    'country',
+    'city',
+    'address',
+    'mobile_no'
+]
+
+error_messages = {
+    'email': 'Email is not set',
+    'password': 'Password is not set',
+    'first_name': 'First name is not set',
+    'last_name': 'Last name is not set',
+    'country': 'Country is not set',
+    'city': 'City is not set',
+    'address': 'Address is not set',
+    'mobile_no': 'Mobile number is not set'
+}
+
 
 @profile_bp.route('', methods=['POST'])
 def create_profile():
@@ -13,30 +35,35 @@ def create_profile():
     if not request_data:
         return make_response({'error': 'Request data error'}, 400)
 
-    if 'email' not in request_data:
-        return make_response({'error': 'Email is not set'}, 400)
-
-    if 'password' not in request_data:
-        return make_response({'error': 'Password is not set'}, 400)
+    for field in fields:
+        if field not in request_data:
+            return make_response(error_messages.get(field), 400)
 
     email = request_data['email']
-    password = request_data['password']
 
     user = UserModel.query.filter_by(email=email).first()
+    if user:
+        return make_response({'error': 'User already exist with email'}, 400)
 
-    if not user:
-        user = UserModel()
-        user.email = email
-        user.password = password_hash_generate(password)
+    mobile_no = request_data['mobile_no']
 
-        if 'first_name' in request_data:
-            user.first_name = request_data['first_name']
+    user = UserModel.query.filter_by(mobile_no=mobile_no).first()
+    if user:
+        return make_response({'error': 'User already exist with mobile number'}, 400)
 
-        if 'last_name' in request_data:
-            user.last_name = request_data['last_name']
+    user = UserModel(
+        email=email,
+        mobile_no=mobile_no,
+        password=password_hash_generate(request_data['password']),
+        first_name=request_data['first_name'],
+        last_name=request_data['last_name'],
+        country=request_data['country'],
+        city=request_data['city'],
+        address=request_data['address']
+    )
 
-        db.session.add(user)
-        db.session.commit()
+    db.session.add(user)
+    db.session.commit()
 
     return jsonify(user)
 
@@ -56,21 +83,19 @@ def update_profile():
     if not request_data:
         return make_response({'error': 'Request data error'}, 400)
 
-    if 'email' not in request_data:
-        return make_response({'error': 'Email is not set'}, 400)
-
-    if 'password' not in request_data:
-        return make_response({'error': 'Password is not set'}, 400)
+    for field in fields:
+        if field not in request_data:
+            return make_response(error_messages.get(field), 400)
 
     user = UserModel.query.get(current_identity.id)
     user.email = request_data['email']
-    user.password = password_hash(request_data['password'])
-
-    if 'first_name' in request_data:
-        user.first_name = request_data['first_name']
-
-    if 'last_name' in request_data:
-        user.last_name = request_data['last_name']
+    user.mobile_no = request_data['mobile_no']
+    user.password = password_hash_generate(request_data['password'])
+    user.first_name = request_data['first_name']
+    user.last_name = request_data['last_name']
+    user.country = request_data['country']
+    user.city = request_data['city']
+    user.address = request_data['address']
 
     db.session.add(user)
     db.session.commit()
