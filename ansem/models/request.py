@@ -12,8 +12,7 @@ class Request(db.Model):
     class_no: str = db.Column(db.String, nullable=False)
     score: float = db.Column(db.Float)
     index: int = db.Column(db.Integer)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', foreign_keys=user_id)
 
     def __init__(self, **kwargs):
