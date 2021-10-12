@@ -64,7 +64,7 @@ def update_request(request_id):
     db.session.add(request_object)
     db.session.commit()
 
-    return jsonify(request_object)
+    return jsonify(request_object.as_json())
 
 
 @requests_bp.route('/<int:request_id>', methods=['DELETE'])
