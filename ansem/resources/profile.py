@@ -30,8 +30,10 @@ error_messages = {
 
 @profile_bp.route('', methods=['POST'])
 def create_profile():
-    request_data = request.get_json()
+    if not request.is_json:
+        return make_response({'error': 'Request data type wrong'}, 400)
 
+    request_data = request.get_json(silent=True)
     if not request_data:
         return make_response({'error': 'Request data error'}, 400)
 
@@ -78,8 +80,10 @@ def get_profile():
 @profile_bp.route('', methods=['PUT'])
 @jwt_required()
 def update_profile():
-    request_data = request.get_json()
+    if not request.is_json:
+        return make_response({'error': 'Request data type wrong'}, 400)
 
+    request_data = request.get_json(silent=True)
     if not request_data:
         return make_response({'error': 'Request data error'}, 400)
 
