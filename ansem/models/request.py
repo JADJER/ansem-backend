@@ -13,7 +13,9 @@ class Request(db.Model):
     score: float = db.Column(db.Float)
     index: int = db.Column(db.Integer)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    user = db.relationship('User', foreign_keys=user_id)
+    # type
+    session_id: int = db.Column(db.Integer, db.ForeignKey('sessions.id'), nullable=True)
+    troop_id: int = db.Column(db.Integer, db.ForeignKey('troops.id'), nullable=True)
 
     def __init__(self, **kwargs):
         super(Request, self).__init__(**kwargs)
@@ -31,5 +33,8 @@ class Request(db.Model):
             'school': self.school,
             'class': self.class_no,
             'score': self.score,
-            'index': self.index
+            'index': self.index,
+            'type': self.type,
+            'session_id': self.session_id,
+            'troop_id': self.troop_id
         }
