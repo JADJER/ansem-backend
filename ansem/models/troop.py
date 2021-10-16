@@ -12,6 +12,7 @@ class Troop(db.Model):
     description: str = db.Column(db.String)
     date_start = db.Column(db.Date)
     date_end = db.Column(db.Date)
+    is_active: bool = db.Column(db.Boolean, default=True)
 
     def __init__(self, **kwargs):
         super(Troop, self).__init__(**kwargs)
@@ -28,5 +29,6 @@ class Troop(db.Model):
             'name': self.email,
             'description': self.first_name,
             'date_start': self.last_name,
-            'date_end': self.country
+            'date_end': self.country,
+            'is_active': self.is_active
         }

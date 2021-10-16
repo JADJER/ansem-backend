@@ -44,9 +44,14 @@ def create_request():
     if not request_data:
         return make_response({'error', "Request data error", 400})
 
+    error = {}
+
     for field in fields:
         if field not in request_data:
-            return make_response({'error': error_messages.get(field)}, 400)
+            error[field] = error_messages.get(field)
+
+    if error:
+        return make_response({'error': error}, 400)
 
     request_object = RequestModel(
         school=request_data['school'],
@@ -81,6 +86,15 @@ def update_request(request_id):
     request_data = request.get_json(silent=True)
     if not request_data:
         return make_response({'error', "Request data error", 400})
+
+    error = {}
+
+    for field in fields:
+        if field not in request_data:
+            error[field] = error_messages.get(field)
+
+    if error:
+        return make_response({'error': error}, 400)
 
     request_object = RequestModel.query.filter_by(id=request_id, user_id=current_identity.id).first()
     if not request_object:

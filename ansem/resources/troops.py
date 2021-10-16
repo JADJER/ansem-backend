@@ -1,80 +1,95 @@
 from flask import jsonify, Blueprint, request, make_response
 from flask_jwt import jwt_required, current_identity
-from ansem.models import RequestModel, db
+from ansem.models import TroopModel, db
 
-requests_bp = Blueprint('requests', __name__, url_prefix='/requests')
+troops_bp = Blueprint('troops', __name__, url_prefix='/troops')
 
 fields = [
-    'email',
-    'password',
-    'first_name',
-    'last_name',
-    'country',
-    'city',
-    'address',
-    'mobile_no'
+    'name',
+    'description',
+    'date_start',
+    'date_end',
+    'is_active'
 ]
 
 error_messages = {
-    'email': 'Email is not set',
-    'password': 'Password is not set',
-    'first_name': 'First name is not set',
-    'last_name': 'Last name is not set',
-    'country': 'Country is not set',
-    'city': 'City is not set',
-    'address': 'Address is not set',
-    'mobile_no': 'Mobile number is not set'
+    'name': 'Session name is not set',
+    'description': 'Description is not set',
+    'date_start': 'Date start is not set',
+    'date_end': 'Date end is not set',
+    'is_active': 'Is active not set'
 }
 
 
-@requests_bp.route('', methods=['GET'])
+@troops_bp.route('', methods=['GET'])
 @jwt_required()
-def get_all_requests():
-    requests = RequestModel.query.filter_by(user_id=current_identity.id).all()
+def get_all_troops():
+    if not current_identity.is_admin:
+        return make_response({'error', 'Auth error'}, 400)
+
+    requests = TroopModel.query.all()
     return jsonify(requests)
 
 
-@requests_bp.route('', methods=['POST'])
+@troops_bp.route('', methods=['GET'])
+@troops_bp.route('/active', methods=['GET'])
+def get_active_troops():
+    requests = TroopModel.query.filter_by(is_active=True).all()
+    return jsonify(requests)
+
+
+@troops_bp.route('', methods=['POST'])
 @jwt_required()
-def create_request():
+def create_troop():
+    if not current_identity.is_admin:
+        return make_response({'error', 'Auth error'}, 400)
+
     if not request.is_json:
         return make_response({'error': 'Request data type wrong'}, 400)
 
     request_data = request.get_json(silent=True)
     if not request_data:
         return make_response({'error', "Request data error", 400})
+
+    error = {}
 
     for field in fields:
         if field not in request_data:
-            return make_response({'error': error_messages.get(field)}, 400)
+            error[field] = error_messages.get(field)
 
-    request_object = RequestModel(
-        school=request_data['school'],
-        class_no=request_data['class_no'],
-        score=request_data['score'],
-        index=request_data['index'],
-        user_id=current_identity.id
+    if error:
+        return make_response({'error': error}, 400)
+
+    troop_object = TroopModel(
+        name=request_data['name'],
+        description=request_data['description'],
+        date_start=request_data['date_start'],
+        date_end=request_data['date_end'],
+        is_active=request_data['is_active']
     )
 
-    db.session.add(request_object)
+    db.session.add(troop_object)
     db.session.commit()
 
-    return jsonify(request_object.as_json())
+    return jsonify(troop_object.as_json())
 
 
-@requests_bp.route('/<int:request_id>', methods=['GET'])
+@troops_bp.route('/<int:troop_id>', methods=['GET'])
 @jwt_required()
-def get_request(request_id):
-    request_object = RequestModel.query.filter_by(id=request_id, user_id=current_identity.id).first()
-    if not request_object:
-        return make_response({'error': 'Request not found'}, 400)
+def get_request(troop_id):
+    troop_object = TroopModel.query.get(troop_id)
+    if not troop_object:
+        return make_response({'error': 'Troop not found'}, 400)
 
-    return jsonify(request_object)
+    return jsonify(troop_object.as_json())
 
 
-@requests_bp.route('/<int:request_id>', methods=['PUT'])
+@troops_bp.route('/<int:troop_id>', methods=['PUT'])
 @jwt_required()
-def update_request(request_id):
+def update_troop(troop_id):
+    if not current_identity.is_admin:
+        return make_response({'error', 'Auth error'}, 400)
+
     if not request.is_json:
         return make_response({'error': 'Request data type wrong'}, 400)
 
@@ -82,29 +97,42 @@ def update_request(request_id):
     if not request_data:
         return make_response({'error', "Request data error", 400})
 
-    request_object = RequestModel.query.filter_by(id=request_id, user_id=current_identity.id).first()
-    if not request_object:
-        return make_response({'error': 'Request not found'}, 400)
+    error = {}
 
-    request_object.school = request_data['school']
-    request_object.class_no = request_data['class_no']
-    request_object.score = request_data['score']
-    request_object.index = request_data['index']
+    for field in fields:
+        if field not in request_data:
+            error[field] = error_messages.get(field)
 
-    db.session.add(request_object)
+    if error:
+        return make_response({'error': error}, 400)
+
+    troop_object = TroopModel.query.get(troop_id)
+    if not troop_object:
+        return make_response({'error': 'Troop not found'}, 400)
+
+    troop_object.name = request_data['name']
+    troop_object.description = request_data['description']
+    troop_object.date_start = request_data['date_start']
+    troop_object.date_end = request_data['date_end']
+    troop_object.is_active = request_data['is_active']
+
+    db.session.add(troop_object)
     db.session.commit()
 
-    return jsonify(request_object.as_json())
+    return jsonify(troop_object.as_json())
 
 
-@requests_bp.route('/<int:request_id>', methods=['DELETE'])
+@troops_bp.route('/<int:troop_id>', methods=['DELETE'])
 @jwt_required()
-def delete_request(request_id):
-    request_object = RequestModel.query.filter_by(id=request_id, user_id=current_identity.id).first()
-    if not request_object:
-        return make_response({'error': 'Request not found'}, 400)
+def delete_troop(troop_id):
+    if not current_identity.is_admin:
+        return make_response({'error', 'Auth error'}, 400)
 
-    db.session.delete(request_object)
+    troop_object = TroopModel.query.get(troop_id)
+    if not troop_object:
+        return make_response({'error': 'Troop not found'}, 400)
+
+    db.session.delete(troop_object)
     db.session.commit()
 
     return make_response({'result': 'OK'}, 200)
