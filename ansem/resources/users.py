@@ -4,7 +4,6 @@ from ansem.models import UserModel, db
 from ansem.utils import password_hash_generate
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
-profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
 
 fields = [
     'email',
@@ -27,6 +26,16 @@ error_messages = {
     'address': 'Address is not set',
     'mobile_no': 'Mobile number is not set'
 }
+
+
+@users_bp.route('', methods=["GET"])
+@jwt_required()
+def get_users():
+    if not current_identity.is_admin:
+        return make_response({'error', 'Auth error'}, 400)
+
+    users = UserModel.query.all()
+    return jsonify(users)
 
 
 @users_bp.route('', methods=['POST'])
@@ -74,17 +83,6 @@ def create_user():
     db.session.commit()
 
     return jsonify(user.as_json())
-
-
-@users_bp.route('', methods=["GET"])
-@jwt_required()
-def get_users():
-    if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
-
-    # TODO Fix
-    users = UserModel.query.all
-    return jsonify(users)
 
 
 @users_bp.route('/<int:user_id>', methods=["GET"])
@@ -155,27 +153,3 @@ def delete_user(user_id):
     db.session.commit()
 
     return make_response({'result': 'OK'}, 200)
-
-
-@profile_bp.route('', methods=["POST"])
-@jwt_required()
-def create_profile():
-    return create_user()
-
-
-@profile_bp.route('', methods=["GET"])
-@jwt_required()
-def get_profile():
-    return get_user(current_identity.id)
-
-
-@profile_bp.route('', methods=["PUT"])
-@jwt_required()
-def update_profile():
-    return update_user(current_identity.id)
-
-
-@profile_bp.route('', methods=["DELETE"])
-@jwt_required()
-def delete_profile():
-    return delete_user(current_identity.id)

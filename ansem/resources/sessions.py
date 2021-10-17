@@ -27,15 +27,15 @@ def get_all_sessions():
     if not current_identity.is_admin:
         return make_response({'error', 'Auth error'}, 400)
 
-    requests = SessionModel.query.all()
-    return jsonify(requests)
+    sessions = SessionModel.query.all()
+    return jsonify(sessions)
 
 
 @sessions_bp.route('', methods=['GET'])
 @sessions_bp.route('/active', methods=['GET'])
 def get_active_sessions():
-    requests = SessionModel.query.filter_by(is_active=True).all()
-    return jsonify(requests)
+    sessions = SessionModel.query.filter_by(is_active=True).all()
+    return jsonify(sessions)
 
 
 @sessions_bp.route('', methods=['POST'])

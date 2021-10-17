@@ -27,15 +27,15 @@ def get_all_troops():
     if not current_identity.is_admin:
         return make_response({'error', 'Auth error'}, 400)
 
-    requests = TroopModel.query.all()
-    return jsonify(requests)
+    troops = TroopModel.query.all()
+    return jsonify(troops)
 
 
 @troops_bp.route('', methods=['GET'])
 @troops_bp.route('/active', methods=['GET'])
 def get_active_troops():
-    requests = TroopModel.query.filter_by(is_active=True).all()
-    return jsonify(requests)
+    troops = TroopModel.query.filter_by(is_active=True).all()
+    return jsonify(troops)
 
 
 @troops_bp.route('', methods=['POST'])
