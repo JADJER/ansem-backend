@@ -7,7 +7,7 @@ from flask_cors import CORS
 from .api import api_bp
 from .models import db
 from .config import Config
-from .secury import identity, authentication
+from .secury import identity, authentication, auth_response_handler
 
 
 def create_app():
@@ -22,8 +22,9 @@ def create_app():
     except OSError:
         pass
 
-    JWT(app, authentication, identity)
     CORS(app)
+    jwt = JWT(app, authentication, identity)
+    jwt.auth_response_handler(auth_response_handler)
 
     db.init_app(app)
 

@@ -3,7 +3,7 @@ from flask_jwt import jwt_required, current_identity
 from ansem.models import UserModel, db
 from ansem.utils import password_hash_generate
 
-profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
+users_bp = Blueprint('users', __name__, url_prefix='/users')
 
 fields = [
     'email',
@@ -28,8 +28,18 @@ error_messages = {
 }
 
 
-@profile_bp.route('', methods=['POST'])
-def create_profile():
+@users_bp.route('', methods=["GET"])
+@jwt_required()
+def get_users():
+    if not current_identity.is_admin:
+        return make_response({'error', 'Auth error'}, 400)
+
+    users = UserModel.query.all()
+    return jsonify(users)
+
+
+@users_bp.route('', methods=['POST'])
+def create_user():
     if not request.is_json:
         return make_response({'error': 'Request data type wrong'}, 400)
 
@@ -37,9 +47,14 @@ def create_profile():
     if not request_data:
         return make_response({'error': 'Request data error'}, 400)
 
+    error = {}
+
     for field in fields:
         if field not in request_data:
-            return make_response({'error': error_messages.get(field)}, 400)
+            error[field] = error_messages.get(field)
+
+    if error:
+        return make_response({'error': error}, 400)
 
     email = request_data['email']
 
@@ -70,16 +85,25 @@ def create_profile():
     return jsonify(user.as_json())
 
 
-@profile_bp.route('', methods=["GET"])
+@users_bp.route('/<int:user_id>', methods=["GET"])
 @jwt_required()
-def get_profile():
-    user = UserModel.query.get(current_identity.id)
+def get_user(user_id):
+    if not (current_identity.is_admin or user_id == current_identity.id):
+        return make_response({'error', 'Auth error'}, 400)
+
+    user = UserModel.query.get(user_id)
+    if not user:
+        return make_response({'error': 'User not found'}, 400)
+
     return jsonify(user.as_json())
 
 
-@profile_bp.route('', methods=['PUT'])
+@users_bp.route('/<int:user_id>', methods=['PUT'])
 @jwt_required()
-def update_profile():
+def update_user(user_id):
+    if not (current_identity.is_admin or user_id == current_identity.id):
+        return make_response({'error', 'Auth error'}, 400)
+
     if not request.is_json:
         return make_response({'error': 'Request data type wrong'}, 400)
 
@@ -87,11 +111,19 @@ def update_profile():
     if not request_data:
         return make_response({'error': 'Request data error'}, 400)
 
+    error = {}
+
     for field in fields:
         if field not in request_data:
-            return make_response({'error': error_messages.get(field)}, 400)
+            error[field] = error_messages.get(field)
 
-    user = UserModel.query.get(current_identity.id)
+    if error:
+        return make_response({'error': error}, 400)
+
+    user = UserModel.query.get(user_id)
+    if not user:
+        return make_response({'error': 'User not found'}, 400)
+
     user.email = request_data['email']
     user.mobile_no = request_data['mobile_no']
     user.password = password_hash_generate(request_data['password'])
@@ -107,10 +139,16 @@ def update_profile():
     return jsonify(user.as_json())
 
 
-@profile_bp.route('', methods=['DELETE'])
+@users_bp.route('/<int:user_id>', methods=['DELETE'])
 @jwt_required()
-def delete_profile():
-    user = UserModel.query.get(current_identity.id)
+def delete_user(user_id):
+    if not (current_identity.is_admin or user_id == current_identity.id):
+        return make_response({'error', 'Auth error'}, 400)
+
+    user = UserModel.query.get(user_id)
+    if not user:
+        return make_response({'error': 'User not found'}, 400)
+
     db.session.delete(user)
     db.session.commit()
 

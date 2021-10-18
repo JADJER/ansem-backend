@@ -16,6 +16,7 @@ class User(db.Model):
     city: str = db.Column(db.String, nullable=False)
     address: str = db.Column(db.String, nullable=False)
     mobile_no: str = db.Column(db.String, unique=True, nullable=False)
+    is_admin: bool = db.Column(db.Boolean, default=False)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -36,4 +37,5 @@ class User(db.Model):
             'city': self.city,
             'address': self.address,
             'mobile_no': self.mobile_no,
+            'is_admin': self.is_admin
         }
