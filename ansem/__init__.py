@@ -5,7 +5,7 @@ from flask_jwt import JWT
 from flask_cors import CORS
 
 from .api import api_bp
-from .models import db
+from .models import db, migrate
 from .config import Config
 from .secury import identity, authentication, auth_response_handler
 
@@ -27,9 +27,10 @@ def create_app():
     jwt.auth_response_handler(auth_response_handler)
 
     db.init_app(app)
+    migrate.init_app(app)
 
-    with app.app_context():
-        db.create_all()
+    # with app.app_context():
+    #     db.create_all()
 
     app.register_blueprint(api_bp)
 

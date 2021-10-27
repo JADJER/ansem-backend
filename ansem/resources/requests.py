@@ -127,6 +127,7 @@ def update_request(request_id):
 @jwt_required()
 def delete_request(request_id):
     request_object = RequestModel.query.filter_by(id=request_id, user_id=current_identity.id).first()
+    
     if not request_object:
         return make_response({'error': 'Request not found'}, 400)
 
