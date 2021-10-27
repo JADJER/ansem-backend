@@ -11,7 +11,7 @@ def check_api_key():
     if 'x-api-key' not in request.headers:
         return make_response(jsonify({
             "description": "Api key is missing",
-            "error": "x_api_key is missing",
+            "error": "x-api-key is missing",
             "status_code": 401
         }), 401)
 
@@ -21,14 +21,14 @@ def check_api_key():
     if not api_key:
         return make_response(jsonify({
             "description": "Api key invalid",
-            "error": "x_api_key invalid",
+            "error": "x-api-key invalid",
             "status_code": 401
         }), 401)
 
     if api_key.revoked:
         return make_response(jsonify({
             "description": "Api key is revoked",
-            "error": "x_api_key is revoked",
+            "error": "x-api-key is revoked",
             "status_code": 401
         }), 401)
 
