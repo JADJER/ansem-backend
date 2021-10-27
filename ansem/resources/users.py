@@ -34,9 +34,8 @@ def get_users():
     if not current_identity.is_admin:
         return make_response({
             "description": "Access denied",
-            "error": "access_denied",
-            "status_code": 401
-        }, 401)
+            "error": "access_denied"
+        }, 403)
 
     users = UserModel.query.all()
     return jsonify(users)
@@ -45,11 +44,17 @@ def get_users():
 @users_bp.route('', methods=['POST'])
 def create_user():
     if not request.is_json:
-        return make_response({'error': 'Request data type wrong'}, 400)
+        return make_response({
+            "description": "Request data type wrong",
+            "error": "bad_request"
+        }, 400)
 
     request_data = request.get_json(silent=True)
     if not request_data:
-        return make_response({'error': 'Request data error'}, 400)
+        return make_response({
+            "description": "Request data error",
+            "error": "bad_request"
+        }, 400)
 
     error = {}
 
@@ -58,19 +63,25 @@ def create_user():
             error[field] = error_messages.get(field)
 
     if error:
-        return make_response({'error': error}, 400)
+        return make_response({'errors': error}, 400)
 
     email = request_data['email']
 
     user = UserModel.query.filter_by(email=email).first()
     if user:
-        return make_response({'error': 'User already exist with email'}, 400)
+        return make_response({
+            "description": "User already exist with email",
+            "error": "user_exist"
+        }, 409)
 
     mobile_no = request_data['mobile_no']
 
     user = UserModel.query.filter_by(mobile_no=mobile_no).first()
     if user:
-        return make_response({'error': 'User already exist with mobile number'}, 400)
+        return make_response({
+            "description": "User already exist with mobile number",
+            "error": "user_exist"
+        }, 409)
 
     user = UserModel(
         email=email,
@@ -95,13 +106,15 @@ def get_user(user_id):
     if not (current_identity.is_admin or user_id == current_identity.id):
         return make_response({
             "description": "Access denied",
-            "error": "access_denied",
-            "status_code": 401
-        }, 401)
+            "error": "access_denied"
+        }, 403)
 
     user = UserModel.query.get(user_id)
     if not user:
-        return make_response({'error': 'User not found'}, 400)
+        return make_response({
+            "description": "User not found",
+            "error": "not_found"
+        }, 400)
 
     return jsonify(user.as_json())
 
@@ -112,16 +125,21 @@ def update_user(user_id):
     if not (current_identity.is_admin or user_id == current_identity.id):
         return make_response({
             "description": "Access denied",
-            "error": "access_denied",
-            "status_code": 401
-        }, 401)
+            "error": "access_denied"
+        }, 403)
 
     if not request.is_json:
-        return make_response({'error': 'Request data type wrong'}, 400)
+        return make_response({
+            "description": "Request data type wrong",
+            "error": "bad_request"
+        }, 400)
 
     request_data = request.get_json(silent=True)
     if not request_data:
-        return make_response({'error': 'Request data error'}, 400)
+        return make_response({
+            "description": "Request data error",
+            "error": "bad_request"
+        }, 400)
 
     error = {}
 
@@ -130,11 +148,14 @@ def update_user(user_id):
             error[field] = error_messages.get(field)
 
     if error:
-        return make_response({'error': error}, 400)
+        return make_response({'errors': error}, 400)
 
     user = UserModel.query.get(user_id)
     if not user:
-        return make_response({'error': 'User not found'}, 400)
+        return make_response({
+            "description": "User not found",
+            "error": "not_found"
+        }, 400)
 
     user.email = request_data['email']
     user.mobile_no = request_data['mobile_no']
@@ -157,15 +178,17 @@ def delete_user(user_id):
     if not (current_identity.is_admin or user_id == current_identity.id):
         return make_response({
             "description": "Access denied",
-            "error": "access_denied",
-            "status_code": 401
-        }, 401)
+            "error": "access_denied"
+        }, 403)
 
     user = UserModel.query.get(user_id)
     if not user:
-        return make_response({'error': 'User not found'}, 400)
+        return make_response({
+            "description": "User not found",
+            "error": "not_found"
+        }, 400)
 
     db.session.delete(user)
     db.session.commit()
 
-    return make_response({'result': 'OK'}, 200)
+    return make_response({'result': 'OK'}, 410)
