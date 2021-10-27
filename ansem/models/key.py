@@ -12,8 +12,9 @@ class Key(db.Model):
     revoked: bool = db.Column(db.Boolean, default=False)
     description: str = db.Column(db.String)
 
-    def __init__(self, **kwargs):
-        super(Key, self).__init__(**kwargs)
+    def __init__(self, key: str, description: str):
+        self.key = key
+        self.description = description
 
     def __repr__(self):
         return self.as_json()
