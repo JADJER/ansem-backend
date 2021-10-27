@@ -32,7 +32,11 @@ error_messages = {
 @jwt_required()
 def get_users():
     if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
+        return make_response({
+            "description": "Access denied",
+            "error": "access_denied",
+            "status_code": 401
+        }, 401)
 
     users = UserModel.query.all()
     return jsonify(users)
@@ -89,7 +93,11 @@ def create_user():
 @jwt_required()
 def get_user(user_id):
     if not (current_identity.is_admin or user_id == current_identity.id):
-        return make_response({'error', 'Auth error'}, 400)
+        return make_response({
+            "description": "Access denied",
+            "error": "access_denied",
+            "status_code": 401
+        }, 401)
 
     user = UserModel.query.get(user_id)
     if not user:
@@ -102,7 +110,11 @@ def get_user(user_id):
 @jwt_required()
 def update_user(user_id):
     if not (current_identity.is_admin or user_id == current_identity.id):
-        return make_response({'error', 'Auth error'}, 400)
+        return make_response({
+            "description": "Access denied",
+            "error": "access_denied",
+            "status_code": 401
+        }, 401)
 
     if not request.is_json:
         return make_response({'error': 'Request data type wrong'}, 400)
@@ -143,7 +155,11 @@ def update_user(user_id):
 @jwt_required()
 def delete_user(user_id):
     if not (current_identity.is_admin or user_id == current_identity.id):
-        return make_response({'error', 'Auth error'}, 400)
+        return make_response({
+            "description": "Access denied",
+            "error": "access_denied",
+            "status_code": 401
+        }, 401)
 
     user = UserModel.query.get(user_id)
     if not user:
