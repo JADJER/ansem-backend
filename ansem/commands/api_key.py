@@ -24,4 +24,19 @@ def list_api_key():
     keys = KeyModel.query.all()
 
     for key in keys:
-        print("{} -> {}".format(key.description, key.key))
+        if key.revoked:
+            print("{} -> {} [ REVOKED ]".format(key.description, key.key))
+        else:
+            print("{} -> {}".format(key.description, key.key))
+
+
+@api_key_bp.cli.command('revoke')
+@click.argument('description')
+def revoke_api_key(description):
+    key = KeyModel.query.filter_by(description=description).first()
+    key.revoked = True
+
+    db.session.add(key)
+    db.session.commit()
+
+    print("Key {} is revoked".format(description))

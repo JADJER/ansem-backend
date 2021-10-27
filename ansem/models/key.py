@@ -8,7 +8,7 @@ class Key(db.Model):
     __tablename__ = 'keys'
 
     id: int = db.Column(db.Integer, primary_key=True)
-    key: str = db.Column(db.String)
+    key: str = db.Column(db.String, unique=True)
     revoked: bool = db.Column(db.Boolean, default=False)
     description: str = db.Column(db.String)
 
