@@ -1,6 +1,7 @@
 from flask import jsonify, Blueprint, request, make_response
 from flask_jwt import jwt_required, current_identity
 from ansem.models import SessionModel, db
+from ansem.utils import response_wrapper
 
 sessions_bp = Blueprint('sessions', __name__, url_prefix='/sessions')
 
@@ -25,7 +26,7 @@ error_messages = {
 @jwt_required()
 def get_all_sessions():
     if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
+        return response_wrapper(success=False, message="Access denied")
 
     sessions = SessionModel.query.all()
     return jsonify(sessions)
@@ -42,23 +43,18 @@ def get_active_sessions():
 @jwt_required()
 def create_session():
     if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
+        return response_wrapper(success=False, message="Access denied")
 
     if not request.is_json:
-        return make_response({'error': 'Request data type wrong'}, 400)
+        return response_wrapper(success=False, message="Request data type wrong")
 
     request_data = request.get_json(silent=True)
     if not request_data:
-        return make_response({'error', "Request data error", 400})
-
-    error = {}
+        return response_wrapper(success=False, message="Request data error")
 
     for field in fields:
         if field not in request_data:
-            error[field] = error_messages.get(field)
-
-    if error:
-        return make_response({'error': error}, 400)
+            return response_wrapper(success=False, message=error_messages.get(field))
 
     session_object = SessionModel(
         name=request_data['name'],
@@ -79,13 +75,13 @@ def create_session():
 def get_session(session_id):
     session_object = SessionModel.query.get(session_id)
     if not session_object:
-        return make_response({'error': 'Session not found'}, 400)
+        return response_wrapper(success=False, message="Session not found")
 
     if session_object.is_active:
         jsonify(session_object.as_json())
 
     if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
+        return response_wrapper(success=False, message="Access denied")
 
     return jsonify(session_object.as_json())
 
@@ -94,27 +90,22 @@ def get_session(session_id):
 @jwt_required()
 def update_session(session_id):
     if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
+        return response_wrapper(success=False, message="Access denied")
 
     if not request.is_json:
-        return make_response({'error': 'Request data type wrong'}, 400)
+        return response_wrapper(success=False, message="Request data type wrong")
 
     request_data = request.get_json(silent=True)
     if not request_data:
-        return make_response({'error', "Request data error", 400})
-
-    error = {}
+        return response_wrapper(success=False, message="Request data error")
 
     for field in fields:
         if field not in request_data:
-            error[field] = error_messages.get(field)
-
-    if error:
-        return make_response({'error': error}, 400)
+            return response_wrapper(success=False, message=error_messages.get(field))
 
     session_object = SessionModel.query.get(session_id)
     if not session_object:
-        return make_response({'error': 'Session not found'}, 400)
+        return response_wrapper(success=False, message="Session not found")
 
     session_object.name = request_data['name']
     session_object.description = request_data['description']
@@ -132,13 +123,13 @@ def update_session(session_id):
 @jwt_required()
 def delete_request(session_id):
     if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
+        return response_wrapper(success=False, message="Access denied")
 
     session_object = SessionModel.query.get(session_id)
     if not session_object:
-        return make_response({'error': 'Session not found'}, 400)
+        return response_wrapper(success=False, message="Session not found")
 
     db.session.delete(session_object)
     db.session.commit()
 
-    return make_response({'result': 'OK'}, 200)
+    return response_wrapper(success=True, message='OK')

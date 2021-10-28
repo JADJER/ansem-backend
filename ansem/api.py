@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, make_response
 from .resources import *
 from .models import KeyModel
-
+from .utils import response_wrapper
 
 api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
 
@@ -9,28 +9,16 @@ api_bp = Blueprint('api', __name__, url_prefix='/api/v1')
 @api_bp.before_app_request
 def check_api_key():
     if 'x-api-key' not in request.headers:
-        return make_response(jsonify({
-            "description": "Api key is missing",
-            "error": "x-api-key is missing",
-            "status_code": 401
-        }), 401)
+        return response_wrapper(success=False, message="Api key is missing")
 
     x_api_key = request.headers['x-api-key']
 
     api_key: KeyModel = KeyModel.query.filter_by(key=x_api_key).first()
     if not api_key:
-        return make_response(jsonify({
-            "description": "Api key invalid",
-            "error": "x-api-key invalid",
-            "status_code": 401
-        }), 401)
+        return response_wrapper(success=False, message="Api key invalid")
 
     if api_key.revoked:
-        return make_response(jsonify({
-            "description": "Api key is revoked",
-            "error": "x-api-key is revoked",
-            "status_code": 401
-        }), 401)
+        return response_wrapper(success=False, message="Api key is revoked")
 
 
 api_bp.register_blueprint(requests_bp)
