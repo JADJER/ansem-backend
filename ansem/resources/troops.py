@@ -1,6 +1,7 @@
 from flask import jsonify, Blueprint, request, make_response
 from flask_jwt import jwt_required, current_identity
 from ansem.models import TroopModel, db
+from ansem.utils import response_wrapper
 
 troops_bp = Blueprint('troops', __name__, url_prefix='/troops')
 
@@ -25,7 +26,7 @@ error_messages = {
 @jwt_required()
 def get_all_troops():
     if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
+        return response_wrapper(success=False, message="Access denied")
 
     troops = TroopModel.query.all()
     return jsonify(troops)
@@ -42,23 +43,18 @@ def get_active_troops():
 @jwt_required()
 def create_troop():
     if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
+        return response_wrapper(success=False, message="Access denied")
 
     if not request.is_json:
-        return make_response({'error': 'Request data type wrong'}, 400)
+        return response_wrapper(success=False, message="Request data type wrong")
 
     request_data = request.get_json(silent=True)
     if not request_data:
-        return make_response({'error', "Request data error", 400})
-
-    error = {}
+        return response_wrapper(success=False, message="Request data error")
 
     for field in fields:
         if field not in request_data:
-            error[field] = error_messages.get(field)
-
-    if error:
-        return make_response({'error': error}, 400)
+            return response_wrapper(success=False, message=error_messages.get(field))
 
     troop_object = TroopModel(
         name=request_data['name'],
@@ -79,7 +75,7 @@ def create_troop():
 def get_request(troop_id):
     troop_object = TroopModel.query.get(troop_id)
     if not troop_object:
-        return make_response({'error': 'Troop not found'}, 400)
+        return response_wrapper(success=False, message="Troop not found")
 
     return jsonify(troop_object.as_json())
 
@@ -88,27 +84,22 @@ def get_request(troop_id):
 @jwt_required()
 def update_troop(troop_id):
     if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
+        return response_wrapper(success=False, message="Access denied")
 
     if not request.is_json:
-        return make_response({'error': 'Request data type wrong'}, 400)
+        return response_wrapper(success=False, message="Request data type wrong")
 
     request_data = request.get_json(silent=True)
     if not request_data:
-        return make_response({'error', "Request data error", 400})
-
-    error = {}
+        return response_wrapper(success=False, message="Request data error")
 
     for field in fields:
         if field not in request_data:
-            error[field] = error_messages.get(field)
-
-    if error:
-        return make_response({'error': error}, 400)
+            return response_wrapper(success=False, message=error_messages.get(field))
 
     troop_object = TroopModel.query.get(troop_id)
     if not troop_object:
-        return make_response({'error': 'Troop not found'}, 400)
+        return response_wrapper(success=False, message="Troop not found")
 
     troop_object.name = request_data['name']
     troop_object.description = request_data['description']
@@ -126,13 +117,13 @@ def update_troop(troop_id):
 @jwt_required()
 def delete_troop(troop_id):
     if not current_identity.is_admin:
-        return make_response({'error', 'Auth error'}, 400)
+        return response_wrapper(success=False, message="Access denied")
 
     troop_object = TroopModel.query.get(troop_id)
     if not troop_object:
-        return make_response({'error': 'Troop not found'}, 400)
+        return response_wrapper(success=False, message="Troop not found")
 
     db.session.delete(troop_object)
     db.session.commit()
 
-    return make_response({'result': 'OK'}, 200)
+    return response_wrapper(success=True, message="OK")

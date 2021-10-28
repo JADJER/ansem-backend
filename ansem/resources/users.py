@@ -1,11 +1,11 @@
-from flask import Blueprint, request, jsonify, make_response
+from flask import Blueprint, request
 from flask_jwt import jwt_required, current_identity
-from ansem.models import UserModel, db
-from ansem.utils import password_hash_generate
+from ansem.models import UserModel, RequestModel, db
+from ansem.utils import password_hash_generate, response_wrapper
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
 
-fields = [
+user_fields = [
     'email',
     'password',
     'first_name',
@@ -16,6 +16,17 @@ fields = [
     'mobile_no'
 ]
 
+request_fields = [
+    'user_id',
+    'school',
+    'class',
+    'score',
+    'index',
+    'type',
+    'session_id',
+    'troop_id'
+]
+
 error_messages = {
     'email': 'Email is not set',
     'password': 'Password is not set',
@@ -24,7 +35,15 @@ error_messages = {
     'country': 'Country is not set',
     'city': 'City is not set',
     'address': 'Address is not set',
-    'mobile_no': 'Mobile number is not set'
+    'mobile_no': 'Mobile number is not set',
+    'user_id': 'Session name is not set',
+    'school': 'Description is not set',
+    'class': 'Date start is not set',
+    'score': 'Date end is not set',
+    'index': 'Is active not set',
+    'type': 'Is active not set',
+    'session_id': 'Is active not set',
+    'troop_id': 'Is active not set'
 }
 
 
@@ -32,56 +51,36 @@ error_messages = {
 @jwt_required()
 def get_users():
     if not current_identity.is_admin:
-        return make_response({
-            "description": "Access denied",
-            "error": "access_denied"
-        }, 403)
+        return response_wrapper(success=False, message="Access denied")
 
     users = UserModel.query.all()
-    return jsonify(users)
+    return response_wrapper(success=True, message="Ok", data=users)
 
 
 @users_bp.route('', methods=['POST'])
 def create_user():
     if not request.is_json:
-        return make_response({
-            "description": "Request data type wrong",
-            "error": "bad_request"
-        }, 400)
+        return response_wrapper(success=False, message="Request data type wrong")
 
     request_data = request.get_json(silent=True)
     if not request_data:
-        return make_response({
-            "description": "Request data error",
-            "error": "bad_request"
-        }, 400)
+        return response_wrapper(success=False, message="Request data error")
 
-    error = {}
-
-    for field in fields:
+    for field in user_fields:
         if field not in request_data:
-            error[field] = error_messages.get(field)
-
-    if error:
-        return make_response({'errors': error}, 400)
+            return response_wrapper(success=False, message=error_messages.get(field))
 
     email = request_data['email']
 
     user = UserModel.query.filter_by(email=email).first()
     if user:
-        return make_response({
-            "description": "User already exist with email",
-            "error": "user_exist"
-        }, 409)
+        return response_wrapper(success=False, message="User already exist with email")
 
     mobile_no = request_data['mobile_no']
 
     user = UserModel.query.filter_by(mobile_no=mobile_no).first()
     if user:
-        return make_response({
-            "description": "User already exist with mobile number",
-            "error": "user_exist"
-        }, 409)
+        return response_wrapper(success=False, message="User already exist with mobile number")
 
     user = UserModel(
         email=email,
@@ -97,65 +96,42 @@ def create_user():
     db.session.add(user)
     db.session.commit()
 
-    return jsonify(user.as_json())
+    return response_wrapper(success=True, message="Ok", data=user)
 
 
 @users_bp.route('/<int:user_id>', methods=["GET"])
 @jwt_required()
 def get_user(user_id):
     if not (current_identity.is_admin or user_id == current_identity.id):
-        return make_response({
-            "description": "Access denied",
-            "error": "access_denied"
-        }, 403)
+        return response_wrapper(success=False, message="Access denied")
 
     user = UserModel.query.get(user_id)
     if not user:
-        return make_response({
-            "description": "User not found",
-            "error": "not_found"
-        }, 400)
+        return response_wrapper(success=False, message="User not found")
 
-    return jsonify(user.as_json())
+    return response_wrapper(success=True, message="Ok", data=user)
 
 
 @users_bp.route('/<int:user_id>', methods=['PUT'])
 @jwt_required()
 def update_user(user_id):
     if not (current_identity.is_admin or user_id == current_identity.id):
-        return make_response({
-            "description": "Access denied",
-            "error": "access_denied"
-        }, 403)
+        return response_wrapper(success=False, message="Access denied")
 
     if not request.is_json:
-        return make_response({
-            "description": "Request data type wrong",
-            "error": "bad_request"
-        }, 400)
+        return response_wrapper(success=False, message="Request data type wrong")
 
     request_data = request.get_json(silent=True)
     if not request_data:
-        return make_response({
-            "description": "Request data error",
-            "error": "bad_request"
-        }, 400)
+        return response_wrapper(success=False, message="Request data error")
 
-    error = {}
-
-    for field in fields:
+    for field in user_fields:
         if field not in request_data:
-            error[field] = error_messages.get(field)
-
-    if error:
-        return make_response({'errors': error}, 400)
+            return response_wrapper(success=False, message=error_messages.get(field))
 
     user = UserModel.query.get(user_id)
     if not user:
-        return make_response({
-            "description": "User not found",
-            "error": "not_found"
-        }, 400)
+        return response_wrapper(success=False, message="User not found")
 
     user.email = request_data['email']
     user.mobile_no = request_data['mobile_no']
@@ -169,26 +145,109 @@ def update_user(user_id):
     db.session.add(user)
     db.session.commit()
 
-    return jsonify(user.as_json())
+    return response_wrapper(success=True, message="Ok", data=user)
 
 
 @users_bp.route('/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 def delete_user(user_id):
     if not (current_identity.is_admin or user_id == current_identity.id):
-        return make_response({
-            "description": "Access denied",
-            "error": "access_denied"
-        }, 403)
+        return response_wrapper(success=False, message="Access denied")
 
     user = UserModel.query.get(user_id)
     if not user:
-        return make_response({
-            "description": "User not found",
-            "error": "not_found"
-        }, 400)
+        return response_wrapper(success=False, message="User not found")
 
     db.session.delete(user)
     db.session.commit()
 
-    return make_response({'result': 'OK'}, 410)
+    return response_wrapper(success=True, message='OK')
+
+
+@users_bp.route('/<int:user_id>/requests', methods=['GET'])
+def get_user_requests(user_id):
+    requests = RequestModel.query.filter_by(user_id=user_id).all()
+
+    return response_wrapper(success=True, message="Ok", data=requests)
+
+
+@users_bp.route('/<int:user_id>/requests', methods=['POST'])
+def create_user_request(user_id):
+    if not request.is_json:
+        return response_wrapper(success=False, message="Request data type wrong")
+
+    request_data = request.get_json(silent=True)
+    if not request_data:
+        return response_wrapper(success=False, message="Request data error")
+
+    for field in request_fields:
+        if field not in request_data:
+            return response_wrapper(success=False, message=error_messages.get(field))
+
+    request_object = RequestModel(
+        school=request_data['school'],
+        class_no=request_data['class_no'],
+        score=request_data['score'],
+        index=request_data['index'],
+        user_id=user_id
+    )
+
+    db.session.add(request_object)
+    db.session.commit()
+
+    return response_wrapper(success=True, message="Ok", data=request_object)
+
+
+@users_bp.route('/<int:user_id>/requests/<int:request_id>', methods=['GET'])
+def get_user_request(user_id, request_id):
+    request_object = RequestModel.query.filter_by(id=request_id, user_id=user_id).first()
+    if not request_object:
+        return response_wrapper(success=False, message="Request not found")
+
+    return response_wrapper(success=True, message="Ok", data=request_object)
+
+
+@users_bp.route('/<int:user_id>/requests/<int:request_id>', methods=['PUT'])
+def update_user_request(user_id, request_id):
+    if not request.is_json:
+        return response_wrapper(success=False, message="Request data type wrong")
+
+    request_data = request.get_json(silent=True)
+    if not request_data:
+        return response_wrapper(success=False, message="Request data error")
+
+    for field in request_fields:
+        if field not in request_data:
+            return response_wrapper(success=False, message=error_messages.get(field))
+
+    request_object = RequestModel.query.filter_by(id=request_id, user_id=user_id).first()
+    if not request_object:
+        return response_wrapper(success=False, message="Request not found")
+
+    # TODO Update request
+
+    # request_object.email = request_data['email']
+    # request_object.mobile_no = request_data['mobile_no']
+    # request_object.first_name = request_data['first_name']
+    # request_object.last_name = request_data['last_name']
+    # request_object.country = request_data['country']
+    # request_object.city = request_data['city']
+    # request_object.address = request_data['address']
+
+    db.session.add(request_object)
+    db.session.commit()
+
+    return response_wrapper(success=True, message="Ok", data=request_object)
+
+
+@users_bp.route('/<int:user_id>/requests/<int:request_id>', methods=['DELETE'])
+def delete_user_request(user_id, request_id):
+    request_object = RequestModel.query.filter_by(id=request_id, user_id=user_id).first()
+
+    if not request_object:
+        return response_wrapper(success=False, message="Request not found")
+
+    db.session.delete(request_object)
+    db.session.commit()
+
+    return response_wrapper(success=True, message="Ok")
