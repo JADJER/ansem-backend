@@ -1,8 +1,8 @@
-"""Initial migration.
+"""Init
 
-Revision ID: c62b363236c7
+Revision ID: c14c7f247b0d
 Revises: 
-Create Date: 2021-10-27 12:26:33.874848
+Create Date: 2021-10-28 19:28:45.910481
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c62b363236c7'
+revision = 'c14c7f247b0d'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,7 +23,8 @@ def upgrade():
     sa.Column('key', sa.String(), nullable=True),
     sa.Column('revoked', sa.Boolean(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('key')
     )
     op.create_table('sessions',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -45,18 +46,13 @@ def upgrade():
     )
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('email', sa.String(), nullable=False),
+    sa.Column('username', sa.String(), nullable=False),
     sa.Column('password', sa.String(), nullable=False),
     sa.Column('first_name', sa.String(), nullable=False),
     sa.Column('last_name', sa.String(), nullable=False),
-    sa.Column('country', sa.String(), nullable=False),
-    sa.Column('city', sa.String(), nullable=False),
-    sa.Column('address', sa.String(), nullable=False),
-    sa.Column('mobile_no', sa.String(), nullable=False),
     sa.Column('is_admin', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email'),
-    sa.UniqueConstraint('mobile_no')
+    sa.UniqueConstraint('username')
     )
     op.create_table('requests',
     sa.Column('id', sa.Integer(), nullable=False),
