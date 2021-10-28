@@ -1,7 +1,9 @@
 import click
-from flask import Blueprint
 import secrets
-from ansem.models import KeyModel, db
+from flask import Blueprint
+
+from ansem.models import db, KeyModel
+
 
 api_key_bp = Blueprint('api_key', __name__)
 
@@ -31,12 +33,30 @@ def list_api_key():
 
 
 @api_key_bp.cli.command('revoke')
-@click.argument('description')
-def revoke_api_key(description):
-    key = KeyModel.query.filter_by(description=description).first()
+@click.argument('key')
+def revoke_api_key(key_value):
+    key = KeyModel.query.filter_by(key=key_value).first()
+    if not key:
+        print("Key {} not found".format(key_value))
+        return
+
     key.revoked = True
 
     db.session.add(key)
     db.session.commit()
 
-    print("Key {} is revoked".format(description))
+    print("{} key is revoked".format(key.description))
+
+
+@api_key_bp.cli.command('remove')
+@click.argument('key')
+def remove_api_key(key_value):
+    key = KeyModel.query.filter_by(key=key_value).first()
+    if not key:
+        print("Key {} not found".format(key_value))
+        return
+
+    db.session.delete(key)
+    db.session.commit()
+
+    print("{} key is removed".format(key.description))
