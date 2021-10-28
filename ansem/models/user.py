@@ -11,7 +11,12 @@ class User(db.Model):
     username: str = db.Column(db.String, unique=True, nullable=False)
     password: str = db.Column(db.String, nullable=False)
     first_name: str = db.Column(db.String, nullable=False)
+    second_name: str = db.Column(db.String)
     last_name: str = db.Column(db.String, nullable=False)
+    country: str = db.Column(db.String)
+    city: str = db.Column(db.String)
+    address: str = db.Column(db.String)
+    mobile_no: str = db.Column(db.String)
     is_admin: bool = db.Column(db.Boolean, default=False)
 
     def __init__(self, **kwargs):
@@ -28,6 +33,11 @@ class User(db.Model):
             'id': self.id,
             'username': self.email,
             'first_name': self.first_name,
+            'second_name': self.second_name,
             'last_name': self.last_name,
+            'country': self.country,
+            'city': self.city,
+            'address': self.address,
+            'mobile_no': self.mobile_no,
             'is_admin': self.is_admin
         }
