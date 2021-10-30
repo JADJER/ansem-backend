@@ -6,14 +6,10 @@ from ansem.utils import password_hash_generate, response_wrapper
 users_bp = Blueprint('users', __name__, url_prefix='/users')
 
 user_fields = [
-    'email',
+    'username',
     'password',
     'first_name',
-    'last_name',
-    'country',
-    'city',
-    'address',
-    'mobile_no'
+    'last_name'
 ]
 
 request_fields = [
@@ -28,9 +24,10 @@ request_fields = [
 ]
 
 error_messages = {
-    'email': 'Email is not set',
+    'username': 'Username is not set',
     'password': 'Password is not set',
     'first_name': 'First name is not set',
+    'second_name': 'Second name is not set',
     'last_name': 'Last name is not set',
     'country': 'Country is not set',
     'city': 'City is not set',
@@ -70,33 +67,38 @@ def create_user():
         if field not in request_data:
             return response_wrapper(success=False, message=error_messages.get(field))
 
-    email = request_data['email']
+    username = request_data['username']
 
-    user = UserModel.query.filter_by(email=email).first()
+    user = UserModel.query.filter_by(username=username).first()
     if user:
         return response_wrapper(success=False, message="User already exist with email")
 
-    mobile_no = request_data['mobile_no']
-
-    user = UserModel.query.filter_by(mobile_no=mobile_no).first()
-    if user:
-        return response_wrapper(success=False, message="User already exist with mobile number")
-
     user = UserModel(
-        email=email,
-        mobile_no=mobile_no,
+        username=username,
         password=password_hash_generate(request_data['password']),
         first_name=request_data['first_name'],
-        last_name=request_data['last_name'],
-        country=request_data['country'],
-        city=request_data['city'],
-        address=request_data['address']
+        last_name=request_data['last_name']
     )
+
+    if 'second_name' in request_data:
+        user.second_name = request_data['second_name']
+
+    if 'country' in request_data:
+        user.country = request_data['country']
+
+    if 'city' in request_data:
+        user.city = request_data['city']
+
+    if 'address' in request_data:
+        user.address = request_data['address']
+
+    if 'mobile_no' in request_data:
+        user.mobile_no = request_data['mobile_no']
 
     db.session.add(user)
     db.session.commit()
 
-    return response_wrapper(success=True, message="Ok", data=user)
+    return response_wrapper(success=True, message="User created", data=user)
 
 
 @users_bp.route('/<int:user_id>', methods=["GET"])
