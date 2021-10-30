@@ -31,7 +31,7 @@ class User(db.Model):
     def as_json(self):
         return {
             'id': self.id,
-            'username': self.email,
+            'username': self.username,
             'first_name': self.first_name,
             'second_name': self.second_name,
             'last_name': self.last_name,
