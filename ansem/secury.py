@@ -14,8 +14,8 @@ def identity_handler(payload):
     return UserModel.query.get(user_id)
 
 
-def authentication_handler(email, password):
-    user = UserModel.query.filter_by(email=email).first()
+def authentication_handler(username, password):
+    user = UserModel.query.filter_by(username=username).first()
     password_hash = password_hash_generate(password)
     if user and hmac.compare_digest(user.password, password_hash):
         return user
