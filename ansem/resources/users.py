@@ -18,9 +18,7 @@ request_fields = [
     'class',
     'score',
     'index',
-    'type',
-    'session_id',
-    'troop_id'
+    'session_id'
 ]
 
 error_messages = {
@@ -33,14 +31,12 @@ error_messages = {
     'city': 'City is not set',
     'address': 'Address is not set',
     'mobile_no': 'Mobile number is not set',
-    'user_id': 'Session name is not set',
-    'school': 'Description is not set',
-    'class': 'Date start is not set',
-    'score': 'Date end is not set',
-    'index': 'Is active not set',
-    'type': 'Is active not set',
-    'session_id': 'Is active not set',
-    'troop_id': 'Is active not set'
+    'user_id': 'User ID is not set',
+    'school': 'School is not set',
+    'class': 'Class is not set',
+    'score': 'Score is not set',
+    'index': 'Index is not set',
+    'session_id': 'Session ID is not set'
 }
 
 
@@ -127,22 +123,33 @@ def update_user(user_id):
     if not request_data:
         return response_wrapper(success=False, message="Request data error")
 
-    for field in user_fields:
-        if field not in request_data:
-            return response_wrapper(success=False, message=error_messages.get(field))
-
     user = UserModel.query.get(user_id)
     if not user:
         return response_wrapper(success=False, message="User not found")
 
-    user.email = request_data['email']
-    user.mobile_no = request_data['mobile_no']
-    user.password = password_hash_generate(request_data['password'])
-    user.first_name = request_data['first_name']
-    user.last_name = request_data['last_name']
-    user.country = request_data['country']
-    user.city = request_data['city']
-    user.address = request_data['address']
+    if 'password' in request_data:
+        user.password = password_hash_generate(request_data['password'])
+
+    if 'first_name' in request_data:
+        user.first_name = request_data['first_name']
+
+    if 'second_name' in request_data:
+        user.second_name = request_data['second_name']
+
+    if 'last_name' in request_data:
+        user.last_name = request_data['last_name']
+
+    if 'country' in request_data:
+        user.country = request_data['country']
+
+    if 'city' in request_data:
+        user.city = request_data['city']
+
+    if 'address' in request_data:
+        user.address = request_data['address']
+
+    if 'mobile_no' in request_data:
+        user.mobile_no = request_data['mobile_no']
 
     db.session.add(user)
     db.session.commit()
@@ -191,7 +198,8 @@ def create_user_request(user_id):
         class_no=request_data['class_no'],
         score=request_data['score'],
         index=request_data['index'],
-        user_id=user_id
+        user_id=user_id,
+        session_id=request_data['session_id'],
     )
 
     db.session.add(request_object)
