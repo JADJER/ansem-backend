@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, make_response
+from flask import Blueprint, request
 from .resources import *
 from .models import KeyModel
 from .utils import response_wrapper
@@ -23,6 +23,5 @@ def check_api_key():
 
 api_bp.register_blueprint(requests_bp)
 api_bp.register_blueprint(sessions_bp)
-api_bp.register_blueprint(troops_bp)
 api_bp.register_blueprint(users_bp)
 api_bp.register_blueprint(profile_bp)
