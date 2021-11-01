@@ -10,12 +10,10 @@ class Request(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
     school: str = db.Column(db.String, nullable=False)
     class_no: str = db.Column(db.String, nullable=False)
-    score: float = db.Column(db.Float)
-    index: int = db.Column(db.Integer)
+    score: float = db.Column(db.Float, nullable=False)
+    index: int = db.Column(db.Integer, nullable=False)
     user_id: int = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    # type
-    session_id: int = db.Column(db.Integer, db.ForeignKey('sessions.id'), nullable=True)
-    troop_id: int = db.Column(db.Integer, db.ForeignKey('troops.id'), nullable=True)
+    session_id: int = db.Column(db.Integer, db.ForeignKey('sessions.id'), nullable=False)
 
     def __init__(self, **kwargs):
         super(Request, self).__init__(**kwargs)
@@ -34,7 +32,5 @@ class Request(db.Model):
             'class': self.class_no,
             'score': self.score,
             'index': self.index,
-            'type': self.type,
-            'session_id': self.session_id,
-            'troop_id': self.troop_id
+            'session_id': self.session_id
         }

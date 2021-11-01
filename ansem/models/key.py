@@ -8,9 +8,9 @@ class Key(db.Model):
     __tablename__ = 'keys'
 
     id: int = db.Column(db.Integer, primary_key=True)
-    key: str = db.Column(db.String, unique=True)
+    key: str = db.Column(db.String, unique=True, nullable=False)
     revoked: bool = db.Column(db.Boolean, default=False)
-    description: str = db.Column(db.String)
+    description: str = db.Column(db.String, nullable=False)
 
     def __init__(self, key: str, description: str):
         self.key = key
