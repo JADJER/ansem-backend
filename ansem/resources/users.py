@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from flask_jwt import jwt_required, current_identity
+from ansem.jwt import jwt_required, current_identity
 from ansem.models import UserModel, RequestModel, db
 from ansem.utils import password_hash_generate, response_wrapper
 

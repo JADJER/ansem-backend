@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flask_jwt import jwt_required, current_identity
+from ansem.jwt import jwt_required, current_identity
 from .users import get_user_request, get_user_requests, create_user_request, update_user_request, delete_user_request
 
 profile_requests_bp = Blueprint('profile_requests', __name__, url_prefix='/requests')

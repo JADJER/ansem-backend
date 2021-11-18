@@ -1,7 +1,6 @@
 import os
 
 from flask import Flask
-from flask_jwt import JWT
 from flask_cors import CORS
 
 from .api import api_bp
@@ -9,6 +8,7 @@ from .models import db, migrate
 from .config import Config
 from .secury import identity_handler, authentication_handler, auth_response_handler, error_handler
 from .commands import *
+from .jwt import JWT
 
 
 def create_app():
@@ -25,9 +25,7 @@ def create_app():
     app.config.from_pyfile(os.path.join(app.instance_path, 'app.cfg'))
 
     CORS(app)
-    jwt = JWT(app, authentication_handler, identity_handler)
-    jwt.jwt_error_handler(error_handler)
-    jwt.auth_response_handler(auth_response_handler)
+    JWT(app)
 
     db.init_app(app)
     migrate.init_app(app)

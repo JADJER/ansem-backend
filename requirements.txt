@@ -1,9 +1,6 @@
 Flask
 Flask-SQLAlchemy
-Flask-JWT
 Flask-Cors
 Flask-Migrate
 
-click
-alembic
-SQLAlchemy
+JWT

@@ -1,5 +1,5 @@
 from flask import jsonify, Blueprint, request, make_response
-from flask_jwt import jwt_required, current_identity
+from ansem.jwt import jwt_required, current_identity
 from ansem.models import SessionModel, db
 from ansem.utils import response_wrapper
 

@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flask_jwt import jwt_required, current_identity
+from ansem.jwt import jwt_required, current_identity
 from .users import create_user, get_user, update_user, delete_user
 from .profile_requests import profile_requests_bp
 
